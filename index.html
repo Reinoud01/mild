@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mild</title>
+<meta name="theme-color" content="#FBF5EA">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mild">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="https://wzsxhtgligpoxrmsrgax.supabase.co/functions/v1/mild/icon-180.png">
+<link rel="icon" href="https://wzsxhtgligpoxrmsrgax.supabase.co/functions/v1/mild/icon-180.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&display=swap">
+<style>
+/* ---- Mild design tokens ----
+   Emotioneel: felle, hoopvolle kleuren, één per week.
+   Functioneel: warm licht, diep plum-grijs als inkt. */
+:root{
+  --bg:#FBF5EA; --card:#FFFFFF; --ink:#2B2836; --muted:#736F80; --line:#EBE3D6;
+  --accent:#F08A3C; --accent-ink:#2B2836; --soft:#FFF0E0; --focus:#5BB4E5;
+  --c1:#F5B82E; --c2:#F08A3C; --c3:#EF6F6C; --c4:#E88BC4; --c5:#B58BE0;
+  --c6:#6F9BEB; --c7:#5BB4E5; --c8:#5CC9B0; --c9:#6CC48A; --c10:#B8CF5A;
+  --face:#2B2836;
+  --font:"Nunito",ui-rounded,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:24px; --r-s:16px; --ease:cubic-bezier(.2,.7,.2,1);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#1E1B27; --card:#2A2638; --ink:#F4EFF8; --muted:#A79FB8; --line:#3A3550;
+    --accent:#F5A05A; --accent-ink:#1E1B27; --soft:#3A2F35; --face:#1E1B27;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#1E1B27; --card:#2A2638; --ink:#F4EFF8; --muted:#A79FB8; --line:#3A3550;
+  --accent:#F5A05A; --accent-ink:#1E1B27; --soft:#3A2F35; --face:#1E1B27;
+}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.5;font-weight:500;-webkit-font-smoothing:antialiased}
+.app{max-width:520px;margin:0 auto;padding-block:18px 36px;padding-inline:max(20px,env(safe-area-inset-left),env(safe-area-inset-right));display:flex;flex-direction:column;gap:18px;min-height:100%;box-sizing:border-box}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:800;font-size:24px;letter-spacing:-0.02em;display:flex;align-items:center;gap:10px}
+.brand svg{width:34px;height:34px}
+.meta{font-size:13px;font-weight:700;color:var(--muted)}
+.card{background:var(--card);border-radius:var(--r);padding:22px;box-shadow:0 1px 0 var(--line)}
+.card.tint{background:var(--tint,var(--soft))}
+.eyebrow{font-size:13px;font-weight:800;letter-spacing:0.02em;color:var(--muted);margin:0 0 8px}
+.sentence{font-size:25px;line-height:1.3;font-weight:700;margin:0;text-wrap:balance;letter-spacing:-0.01em}
+.theme{font-size:22px;font-weight:800;margin:0 0 6px}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:15px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.stack{display:flex;flex-direction:column;gap:14px}
+button{font:inherit;font-weight:800;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:12px 18px;cursor:pointer;min-height:48px;transition:transform .25s var(--ease),background .25s var(--ease)}
+button:active{transform:scale(.97)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.chip{flex:1;text-align:center}
+button.chip[aria-pressed="true"]{background:var(--soft);border-color:var(--accent)}
+button.link{border:0;background:none;padding:6px 0;color:var(--muted);min-height:0;font-weight:700}
+button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+textarea,input{font:inherit;font-weight:500;width:100%;box-sizing:border-box;border:2px solid var(--line);border-radius:var(--r-s);padding:12px 14px;background:var(--bg);color:var(--ink)}
+textarea{min-height:88px;resize:vertical}
+textarea:focus,input:focus{outline:3px solid var(--focus);outline-offset:1px;border-color:transparent}
+label{display:block;font-size:15px;color:var(--muted);margin-bottom:6px;font-weight:700}
+.hero{display:flex;gap:16px;align-items:center}
+.hero svg{width:96px;height:96px;flex:none}
+.crowd{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:end}
+.crowd svg{width:100%;height:auto;display:block}
+.legend{font-size:14px;color:var(--muted)}
+.entry{padding:12px 0;border-top:2px solid var(--line)}
+.entry:first-of-type{border-top:0;padding-top:0}
+.entry .d{font-size:13px;color:var(--muted);font-weight:700}
+.entry .t{font-weight:700;margin:2px 0}
+.entry .n{font-size:16px}
+nav{display:flex;gap:6px;background:var(--card);border-radius:999px;padding:6px;margin-top:auto;box-shadow:0 1px 0 var(--line)}
+nav button{flex:1;border:0;background:none;color:var(--muted);padding:10px 4px;font-size:14px;min-height:42px}
+nav button[aria-current="page"]{background:var(--soft);color:var(--ink)}
+.notice{background:var(--soft);border-radius:var(--r-s);padding:12px 14px;font-size:15px}
+.thanks{font-size:26px;font-weight:800}
+.week-list{display:grid;grid-template-columns:auto auto 1fr;gap:8px 12px;font-size:16px;align-items:center}
+.week-list .num{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:800}
+.week-list svg{width:28px;height:28px}
+.hint{font-size:15px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){
+  .pop{animation:pop .6s var(--ease)}
+  @keyframes pop{from{transform:translateY(8px) scale(.6);opacity:0}to{transform:none;opacity:1}}
+  .breathe{animation:breathe 5s ease-in-out infinite;transform-origin:50% 90%}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+}
+</style>
+
+</head>
+<body>
+<div class="app" id="app">
+  <header>
+    <div class="brand"><span id="brand-fig"></span>Mild</div>
+    <div class="meta" id="hdr-meta"></div>
+  </header>
+  <main id="main" class="stack"></main>
+  <nav id="nav" hidden>
+    <button data-view="today">Vandaag</button>
+    <button data-view="crowd">Gezelschap</button>
+    <button data-view="log">Terugblik</button>
+    <button data-view="more">Meer</button>
+  </nav>
+</div>
+
+<script>
+/* ---------- Programma ---------- */
+let WEEKS = [];
+const TOTAL = 70;
+
+/* ---------- Poppetjes (eigen ontwerp) ----------
+   Ronde figuren met twee ogen en een lachje. Vorm en kleur volgen uit het dagnummer,
+   zodat elk poppetje altijd hetzelfde blijft. */
+function fig(seed, color, opts={}){
+  const r = (n)=>{ let x=Math.sin(seed*9301+n*49297)*233280; return x-Math.floor(x); };
+  const shape = Math.floor(r(1)*4);
+  const w=64, h=72, cx=32;
+  let body;
+  if(shape===0) body=`<circle cx="${cx}" cy="42" r="26" fill="${color}"/>`;                       // bol
+  else if(shape===1) body=`<rect x="12" y="10" width="40" height="58" rx="20" fill="${color}"/>`; // lang
+  else if(shape===2) body=`<ellipse cx="${cx}" cy="46" rx="30" ry="22" fill="${color}"/>`;         // breed
+  else body=`<path d="M32 8 C48 22 58 36 58 48 A26 20 0 0 1 6 48 C6 36 16 22 32 8Z" fill="${color}"/>`; // druppel
+  const ey = shape===1?34:(shape===2?42:40), gap = 7+Math.round(r(2)*4);
+  const mood = opts.mood ?? (r(3)<.85?1:0);
+  const eyes = `<circle cx="${cx-gap}" cy="${ey}" r="2.6" fill="var(--face)"/><circle cx="${cx+gap}" cy="${ey}" r="2.6" fill="var(--face)"/>`;
+  const mouth = mood ? `<path d="M${cx-5} ${ey+9} Q${cx} ${ey+14} ${cx+5} ${ey+9}" stroke="var(--face)" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
+                     : `<path d="M${cx-4} ${ey+10} H${cx+4}" stroke="var(--face)" stroke-width="2.4" stroke-linecap="round"/>`;
+  const cheeks = r(4)<.5 ? `<circle cx="${cx-gap-6}" cy="${ey+6}" r="2.2" fill="#fff" opacity=".45"/><circle cx="${cx+gap+6}" cy="${ey+6}" r="2.2" fill="#fff" opacity=".45"/>` : "";
+  const arms = r(5)<.4 ? `<path d="M${shape===2?6:10} ${ey+12} l-5 6 M${shape===2?58:54} ${ey+12} l5 6" stroke="${color}" stroke-width="5" stroke-linecap="round"/>` : "";
+  return `<svg viewBox="0 0 ${w} ${h}" class="${opts.cls||""}" aria-hidden="true">${arms}${body}${eyes}${mouth}${cheeks}</svg>`;
+}
+const col = (k)=>`var(--c${k})`;
+
+/* ---------- Opslag ---------- */
+const KEY = "mild.v1";
+let S = load();
+function load(){ try{ const r = localStorage.getItem(KEY); if(r) return JSON.parse(r);}catch(e){} return {start:null, offset:0, entries:{}, sunday:{}, before:"", after:"", push:false, morning:"07:30", evening:"21:30"}; }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+/* ---------- Meldingen (web push) ---------- */
+const BASE = "https://wzsxhtgligpoxrmsrgax.supabase.co/functions/v1/mild";
+const VAPID_PUBLIC = "BMvw4zoC9y5Gx9aQIqA5EvEqd1sLMFkndujcf_gEH_WZMnfv3IJD6o8TQk0iACbccPQ6bwf8UGxg-6ZWqo3d-A4";
+const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone===true;
+const pushSupported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js").catch(()=>{}); }
+function b64ToU8(s){ const p="=".repeat((4-s.length%4)%4); const b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/")); return Uint8Array.from(b, c=>c.charCodeAt(0)); }
+async function enablePush(){
+  const perm = await Notification.requestPermission();
+  if(perm!=="granted") throw new Error("Geen toestemming gegeven.");
+  const reg = await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  if(!sub) sub = await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:b64ToU8(VAPID_PUBLIC)});
+  S.push = true; save();
+  await syncPush(sub);
+}
+async function syncPush(sub){
+  if(!S.push || !pushSupported) return;
+  try{
+    if(!sub){ const reg = await navigator.serviceWorker.ready; sub = await reg.pushManager.getSubscription(); }
+    if(!sub) return;
+    const r = await fetch(BASE+"/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({subscription:sub.toJSON(), start:S.start, offset:S.offset||0, tz:Intl.DateTimeFormat().resolvedOptions().timeZone||"Europe/Amsterdam", morning:S.morning||"07:30", evening:S.evening||"21:30"})});
+    if(!r.ok) throw new Error("Server antwoordde "+r.status);
+  }catch(e){ console.warn("push sync", e); }
+}
+async function disablePush(){
+  try{ const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); if(sub){ await fetch(BASE+"/unsubscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({endpoint:sub.endpoint})}); await sub.unsubscribe(); } }catch(e){}
+  S.push=false; save();
+}
+function pushCard(){
+  const c = el(`<section class="card stack"><p class="eyebrow">Meldingen</p><div id="push-body" class="stack"></div></section>`);
+  const body = c.querySelector("#push-body");
+  if(!pushSupported){
+    body.append(el(`<p class="hint">${standalone?"Deze browser ondersteunt geen meldingen.":"Zet Mild eerst op je beginscherm: tik in Safari op Delen en dan op “Zet op beginscherm”. Open de app daarna vanaf je beginscherm; dan kun je hier meldingen aanzetten."}</p>`));
+    return c;
+  }
+  if(S.push){
+    body.append(el(`<p class="small">Aan. Je krijgt elke ochtend de opdracht om ${esc(S.morning||"07:30")} en 's avonds de vragen om ${esc(S.evening||"21:30")}.</p>`));
+    body.append(el(`<div class="row"><button id="btn-test">Stuur een test</button><button class="link" id="btn-off">Meldingen uit</button></div>`));
+    body.append(el(`<p class="hint" id="push-msg"></p>`));
+    body.querySelector("#btn-test").onclick=async()=>{ const m=body.querySelector("#push-msg"); m.textContent="Bezig..."; try{ const r=await fetch(BASE+"/test",{method:"POST"}); m.textContent=r.ok?"Verstuurd. Hij komt binnen een paar seconden.":"Mislukt ("+r.status+")."; }catch(e){ m.textContent="Mislukt: "+e.message; } };
+    body.querySelector("#btn-off").onclick=async()=>{ await disablePush(); render(); };
+  }else{
+    body.append(el(`<div class="row"><div style="flex:1"><label for="t-m">Ochtend</label><input type="time" id="t-m" value="${esc(S.morning||"07:30")}"></div><div style="flex:1"><label for="t-e">Avond</label><input type="time" id="t-e" value="${esc(S.evening||"21:30")}"></div></div>`));
+    body.append(el(`<div><button class="primary" id="btn-on">Meldingen aanzetten</button></div><p class="hint" id="push-msg"></p>`));
+    body.querySelector("#btn-on").onclick=async()=>{ S.morning=body.querySelector("#t-m").value||"07:30"; S.evening=body.querySelector("#t-e").value||"21:30"; save(); const m=body.querySelector("#push-msg"); m.textContent="Bezig..."; try{ await enablePush(); render(); }catch(e){ m.textContent="Niet gelukt: "+e.message; } };
+  }
+  return c;
+}
+
+/* ---------- Dag ---------- */
+function todayISO(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function dayIndex(){
+  if(!S.start) return -1;
+  const a = new Date(S.start+"T00:00:00"), b = new Date(todayISO()+"T00:00:00");
+  return Math.round((b-a)/86400000) + (S.offset||0);
+}
+function dayInfo(i){ const w=Math.floor(i/7); return {w, d:i%7, week:WEEKS[w], task:WEEKS[w].days[i%7]}; }
+function dateOf(i){ const a=new Date(S.start+"T00:00:00"); a.setDate(a.getDate()+i-(S.offset||0)); return a.toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"}); }
+
+/* ---------- Weergave ---------- */
+const main = document.getElementById("main"), nav = document.getElementById("nav"), hdr = document.getElementById("hdr-meta");
+document.getElementById("brand-fig").innerHTML = fig(42, col(2), {mood:1});
+let view = "today";
+nav.addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b) return; view=b.dataset.view; render(); });
+function el(html){ const t=document.createElement("template"); t.innerHTML=html.trim(); return t.content.firstElementChild; }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+
+function render(){
+  main.innerHTML="";
+  const i = dayIndex();
+  nav.hidden = i<0;
+  nav.querySelectorAll("button").forEach(b=>b.setAttribute("aria-current", b.dataset.view===view?"page":"false"));
+  if(i<0) return renderStart();
+  if(i>=TOTAL){ hdr.textContent="Afgerond"; return view==="today"?renderDone():routes[view](i); }
+  const inf = dayInfo(i);
+  hdr.textContent = "Week "+(inf.w+1)+" · dag "+(inf.d+1);
+  routes[view](i);
+}
+const routes = {today:renderToday, crowd:renderCrowd, log:renderLog, more:renderMore};
+
+function renderStart(){
+  hdr.textContent="";
+  main.append(el(`<section class="card stack">
+    <div class="hero">${fig(7, col(1), {mood:1, cls:"breathe"})}<p class="sentence">Tien weken, elke dag één zin.</p></div>
+    <p class="muted">Elke ochtend krijg je één opdracht die je doet in je gewone dag. 's Avonds twee vragen. Bij elkaar drie minuten. Een gemiste dag telt niet en wordt niet genoemd.</p>
+    <div>
+      <label for="before">Voor je begint: hoe kijk je nu naar jezelf, in één zin?</label>
+      <textarea id="before" placeholder="Schrijf het op zoals het is."></textarea>
+    </div>
+    <div class="row">
+      <button class="primary" id="btn-start">Begin vandaag</button>
+      <button id="btn-tomorrow">Begin morgen</button>
+    </div>
+    <p class="hint">Na de start kun je meldingen aanzetten voor de ochtend en de avond.</p>
+  </section>`));
+  const start = (delta)=>{ S.before = document.getElementById("before").value.trim(); const d=new Date(); d.setDate(d.getDate()+delta); S.start = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); S.offset=0; save(); syncPush(); view="today"; render(); };
+  document.getElementById("btn-start").onclick=()=>start(0);
+  document.getElementById("btn-tomorrow").onclick=()=>start(1);
+}
+
+function renderToday(i){
+  const inf = dayInfo(i), entry = S.entries[i], c = col(inf.week.c);
+  if(inf.d===0){
+    main.append(el(`<section class="card stack" style="--tint:color-mix(in srgb, ${c} 18%, var(--card))"><div class="hero">${fig(100+inf.w, c, {mood:1})}<div><p class="eyebrow">Week ${inf.w+1}</p><p class="theme">${esc(inf.week.t)}</p></div></div><p class="muted small">${esc(inf.week.intro)}</p></section>`));
+    main.lastElementChild.classList.add("tint");
+  }
+  if(entry){
+    main.append(el(`<section class="card stack">
+      <div class="hero">${fig(i, c, {mood:1, cls:"pop"})}<p class="thanks">Tot morgen.</p></div>
+      <p class="muted">Vandaag: ${esc(labelDone(entry.done))}${entry.note?" · “"+esc(entry.note)+"”":""}</p>
+      <div><button class="link" id="btn-edit">Antwoord aanpassen</button></div>
+    </section>`));
+    document.getElementById("btn-edit").onclick=()=>{ delete S.entries[i]; save(); render(); };
+    if(inf.d===6) renderSunday(i, inf);
+    if(!S.push) main.append(pushCard());
+    return;
+  }
+  main.append(el(`<section class="card stack">
+    <p class="eyebrow">Vandaag</p>
+    <p class="sentence">${esc(inf.task[0])}</p>
+  </section>`));
+  const f = el(`<section class="card stack">
+    <p class="eyebrow">Vanavond</p>
+    <div>
+      <label>Gedaan?</label>
+      <div class="row" role="group" aria-label="Gedaan">
+        <button class="chip" data-v="ja" aria-pressed="false">Ja</button>
+        <button class="chip" data-v="deels" aria-pressed="false">Deels</button>
+        <button class="chip" data-v="nee" aria-pressed="false">Nee</button>
+      </div>
+    </div>
+    <div>
+      <label for="note">${esc(inf.task[1])}</label>
+      <textarea id="note" placeholder="Eén zin is genoeg."></textarea>
+    </div>
+    <div><button class="primary" id="btn-save">Klaar voor vandaag</button></div>
+  </section>`);
+  main.append(f);
+  let done=null;
+  f.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{ done=b.dataset.v; f.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed", x===b?"true":"false")); });
+  f.querySelector("#btn-save").onclick=()=>{
+    if(!done){ f.querySelector('[role="group"]').style.outline="3px solid var(--focus)"; f.querySelector('[role="group"]').style.borderRadius="999px"; return; }
+    S.entries[i]={done, note:f.querySelector("#note").value.trim(), at:todayISO()}; save(); render();
+  };
+  if(inf.d===6) renderSunday(i, inf);
+  if(!S.push && i<3) main.append(pushCard());
+}
+function labelDone(v){ return {ja:"gedaan", deels:"deels gedaan", nee:"niet gedaan"}[v]||""; }
+
+function renderSunday(i, inf){
+  const cur = S.sunday[inf.w]||"";
+  const s = el(`<section class="card stack">
+    <p class="eyebrow">Terugblik op week ${inf.w+1}</p>
+    <label for="sun">${esc(inf.week.sunday)}</label>
+    <textarea id="sun">${esc(cur)}</textarea>
+    <div><button id="btn-sun">${cur?"Bijwerken":"Opslaan"}</button></div>
+    ${inf.w<9?`<p class="hint">Volgende week: ${esc(WEEKS[inf.w+1].t)}. ${esc(WEEKS[inf.w+1].intro)}</p>`:""}
+  </section>`);
+  main.append(s);
+  s.querySelector("#btn-sun").onclick=()=>{ S.sunday[inf.w]=s.querySelector("#sun").value.trim(); save(); s.querySelector("#btn-sun").textContent="Opgeslagen"; };
+}
+
+function renderCrowd(i){
+  const keys = Object.keys(S.entries).map(Number).filter(k=>S.entries[k].done!=="nee").sort((a,b)=>a-b);
+  const g = el(`<section class="card stack">
+    <p class="eyebrow">Je gezelschap</p>
+    <p class="muted small">Elke dag die je doet, komt er een poppetje bij. Elke week een nieuwe kleur. Een dag die je overslaat, haalt er niets weg.</p>
+    <div class="crowd" id="crowd"></div>
+    <p class="legend">${keys.length} ${keys.length===1?"poppetje":"poppetjes"} na ${Math.min(i+1,TOTAL)} ${Math.min(i+1,TOTAL)===1?"dag":"dagen"}.</p>
+  </section>`);
+  main.append(g);
+  const grid = g.querySelector("#crowd");
+  if(!keys.length) grid.append(el(`<div style="grid-column:1/-1" class="muted small">Nog leeg. Vanavond komt de eerste.</div>`));
+  for(const k of keys){ const inf=dayInfo(k); grid.append(el(fig(k, col(inf.week.c), {mood: S.entries[k].done==="ja"?1:0, cls:k===i?"pop":""}))); }
+}
+
+function renderLog(i){
+  const wrap = el(`<section class="card"><p class="eyebrow">Terugblik</p><div id="entries"></div></section>`);
+  main.append(wrap);
+  const box = wrap.querySelector("#entries");
+  const keys = Object.keys(S.entries).map(Number).sort((a,b)=>b-a);
+  if(!keys.length) box.append(el(`<p class="muted">Nog geen antwoorden. Die verschijnen hier na je eerste avond.</p>`));
+  for(const k of keys){
+    const e=S.entries[k], inf=dayInfo(k);
+    box.append(el(`<div class="entry"><div class="d">Week ${inf.w+1} · dag ${inf.d+1} · ${esc(dateOf(k))} · ${esc(labelDone(e.done))}</div><div class="t">${esc(inf.task[1])}</div><div class="n">${esc(e.note||"—")}</div></div>`));
+  }
+  const sun = Object.keys(S.sunday).map(Number).sort((a,b)=>b-a).filter(w=>S.sunday[w]);
+  if(sun.length){
+    const s = el(`<section class="card"><p class="eyebrow">Zondagen</p><div id="sun"></div></section>`);
+    main.append(s);
+    for(const w of sun) s.querySelector("#sun").append(el(`<div class="entry"><div class="d">Week ${w+1} · ${esc(WEEKS[w].t)}</div><div class="t">${esc(WEEKS[w].sunday)}</div><div class="n">${esc(S.sunday[w])}</div></div>`));
+  }
+  if(S.before) main.append(el(`<section class="card"><p class="eyebrow">Voor de start</p><p>${esc(S.before)}</p></section>`));
+}
+
+function renderMore(i){
+  const m = el(`<section class="card stack"><p class="eyebrow">Het programma</p><div class="week-list" id="wl"></div></section>`);
+  main.append(pushCard());
+  main.append(m);
+  const now = Math.floor(Math.min(i,TOTAL-1)/7);
+  WEEKS.forEach((w,k)=>{
+    const wl=m.querySelector("#wl");
+    wl.append(el(`<span class="num">${k+1}</span>`));
+    wl.append(el(fig(100+k, col(w.c), {mood:1})));
+    wl.append(el(`<span>${esc(w.t)}${k===now?" <span class='muted small'>(nu)</span>":""}</span>`));
+  });
+  const t = el(`<section class="card stack">
+    <p class="eyebrow">Testinstellingen</p>
+    <p class="hint">Alleen voor het uitproberen. Gestart op ${esc(S.start)}. Verschuiving nu: ${S.offset||0} dagen.</p>
+    <div class="row">
+      <button id="btn-prev">Dag terug</button>
+      <button id="btn-next">Dag vooruit</button>
+      <button id="btn-real">Terug naar echt</button>
+    </div>
+    <div><button id="btn-reset">Alles wissen en opnieuw beginnen</button></div>
+    <div id="confirm" hidden class="notice">Zeker? Dit wist al je antwoorden. <button class="link" id="btn-reset2">Ja, wissen</button></div>
+    <p class="hint">Je antwoorden staan alleen op deze telefoon. Wis je de browsergegevens, dan zijn ze weg.</p>
+  </section>`);
+  main.append(t);
+  t.querySelector("#btn-prev").onclick=()=>{ S.offset=(S.offset||0)-1; save(); syncPush(); render(); };
+  t.querySelector("#btn-next").onclick=()=>{ S.offset=(S.offset||0)+1; save(); syncPush(); render(); };
+  t.querySelector("#btn-real").onclick=()=>{ S.offset=0; save(); syncPush(); render(); };
+  t.querySelector("#btn-reset").onclick=()=>{ t.querySelector("#confirm").hidden=false; };
+  t.querySelector("#btn-reset2").onclick=async()=>{ await disablePush(); S={start:null,offset:0,entries:{},sunday:{},before:"",after:"",push:false,morning:"07:30",evening:"21:30"}; save(); view="today"; render(); };
+  main.append(el(`<section class="card stack">
+    <p class="eyebrow">Hulp</p>
+    <p class="hint">Mild is bedoeld voor mensen zonder klachten en vervangt geen behandeling. Zit je ergens mee: je huisarts, of 113 (bel 0800-0113 of chat via 113.nl).</p>
+  </section>`));
+}
+
+function renderDone(){
+  main.append(el(`<section class="card stack">
+    <div class="hero">${fig(999, col(10), {mood:1, cls:"breathe"})}<p class="thanks">Tien weken gedaan.</p></div>
+    <p class="muted">Je begon met: “${esc(S.before||"")}”</p>
+    <label for="after">Hoe kijk je nu naar jezelf, in één zin?</label>
+    <textarea id="after">${esc(S.after||"")}</textarea>
+    <div><button class="primary" id="btn-after">Opslaan</button></div>
+  </section>`));
+  document.getElementById("btn-after").onclick=()=>{ S.after=document.getElementById("after").value.trim(); save(); document.getElementById("btn-after").textContent="Opgeslagen"; };
+}
+
+async function init(){
+  try{ const r = await fetch("./program.json",{cache:"no-cache"}); WEEKS = await r.json(); }
+  catch(e){ main.innerHTML='<section class="card"><p>Het programma kon niet worden geladen. Controleer je verbinding en open de app opnieuw.</p></section>'; return; }
+  render();
+}
+init();
+</script>
+
+</body>
+</html>
