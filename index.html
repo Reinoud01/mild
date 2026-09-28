@@ -53,6 +53,19 @@ p{margin:0}
 .muted{color:var(--muted)}
 .small{font-size:15px}
 .row{display:flex;gap:10px;flex-wrap:wrap}
+.row>.half{flex:1 1 0;min-width:0}
+input[type="time"]{-webkit-appearance:none;appearance:none;min-width:0;width:100%;height:50px;padding:0 14px;text-align:left;display:block}
+input[type="time"]::-webkit-date-and-time-value{text-align:left;margin:0}
+details.src{border-top:2px solid var(--line);padding:10px 0}
+details.src:first-of-type{border-top:0;padding-top:0}
+details.src summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:baseline;font-weight:700;font-size:16px;line-height:1.35}
+details.src summary::-webkit-details-marker{display:none}
+details.src summary .yr{color:var(--muted);font-weight:800;font-size:13px;flex:none;min-width:38px;font-variant-numeric:tabular-nums}
+details.src summary::after{content:"+";margin-left:auto;color:var(--muted);font-weight:800}
+details.src[open] summary::after{content:"\2013"}
+details.src .body{padding:8px 0 4px 48px;font-size:15px;display:flex;flex-direction:column;gap:6px}
+details.src .body a{color:var(--accent);font-weight:700;word-break:break-word}
+.tag{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.02em;padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--ink);margin-right:6px}
 .stack{display:flex;flex-direction:column;gap:14px}
 button{font:inherit;font-weight:800;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:12px 18px;cursor:pointer;min-height:48px;transition:transform .25s var(--ease),background .25s var(--ease)}
 button:active{transform:scale(.97)}
@@ -149,14 +162,21 @@ const standalone = window.matchMedia("(display-mode: standalone)").matches || na
 const pushSupported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
 if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js").catch(()=>{}); }
 function b64ToU8(s){ const p="=".repeat((4-s.length%4)%4); const b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/")); return Uint8Array.from(b, c=>c.charCodeAt(0)); }
-async function enablePush(){
+function withTimeout(p, ms, what){ return Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error(what+" duurde te lang.")), ms))]); }
+async function enablePush(status){
+  const say = status||(()=>{});
+  say("Toestemming vragen...");
   const perm = await Notification.requestPermission();
-  if(perm!=="granted") throw new Error("Geen toestemming gegeven.");
-  const reg = await navigator.serviceWorker.ready;
+  if(perm!=="granted") throw new Error(perm==="denied"?"Toestemming geweigerd.":"Geen toestemming gegeven.");
+  say("Service worker starten...");
+  const reg = await withTimeout(navigator.serviceWorker.ready, 10000, "Starten van de service worker");
+  say("Abonneren...");
   let sub = await reg.pushManager.getSubscription();
-  if(!sub) sub = await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:b64ToU8(VAPID_PUBLIC)});
+  if(!sub) sub = await withTimeout(reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:b64ToU8(VAPID_PUBLIC)}), 15000, "Abonneren");
+  say("Registreren...");
+  const r = await withTimeout(fetch(BASE+"/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({subscription:sub.toJSON(), start:S.start, offset:S.offset||0, tz:Intl.DateTimeFormat().resolvedOptions().timeZone||"Europe/Amsterdam", morning:S.morning||"07:30", evening:S.evening||"21:30"})}), 15000, "Registreren bij de server");
+  if(!r.ok) throw new Error("De server antwoordde met "+r.status+".");
   S.push = true; save();
-  await syncPush(sub);
 }
 async function syncPush(sub){
   if(!S.push || !pushSupported) return;
@@ -185,9 +205,38 @@ function pushCard(){
     body.querySelector("#btn-test").onclick=async()=>{ const m=body.querySelector("#push-msg"); m.textContent="Bezig..."; try{ const r=await fetch(BASE+"/test",{method:"POST"}); m.textContent=r.ok?"Verstuurd. Hij komt binnen een paar seconden.":"Mislukt ("+r.status+")."; }catch(e){ m.textContent="Mislukt: "+e.message; } };
     body.querySelector("#btn-off").onclick=async()=>{ await disablePush(); render(); };
   }else{
-    body.append(el(`<div class="row"><div style="flex:1"><label for="t-m">Ochtend</label><input type="time" id="t-m" value="${esc(S.morning||"07:30")}"></div><div style="flex:1"><label for="t-e">Avond</label><input type="time" id="t-e" value="${esc(S.evening||"21:30")}"></div></div>`));
+    body.append(el(`<div class="row"><div class="half"><label for="t-m">Ochtend</label><input type="time" id="t-m" value="${esc(S.morning||"07:30")}"></div><div class="half"><label for="t-e">Avond</label><input type="time" id="t-e" value="${esc(S.evening||"21:30")}"></div></div>`));
     body.append(el(`<div><button class="primary" id="btn-on">Meldingen aanzetten</button></div><p class="hint" id="push-msg"></p>`));
-    body.querySelector("#btn-on").onclick=async()=>{ S.morning=body.querySelector("#t-m").value||"07:30"; S.evening=body.querySelector("#t-e").value||"21:30"; save(); const m=body.querySelector("#push-msg"); m.textContent="Bezig..."; try{ await enablePush(); render(); }catch(e){ m.textContent="Niet gelukt: "+e.message; } };
+    body.querySelector("#btn-on").onclick=async()=>{ S.morning=body.querySelector("#t-m").value||"07:30"; S.evening=body.querySelector("#t-e").value||"21:30"; save(); const m=body.querySelector("#push-msg"); const b=body.querySelector("#btn-on"); b.disabled=true; b.textContent="Bezig..."; try{ await enablePush(s=>{ m.textContent=s; }); m.textContent="Aan."; render(); }catch(e){ b.disabled=false; b.textContent="Meldingen aanzetten"; m.textContent="Niet gelukt: "+(e&&e.message?e.message:e)+(Notification.permission==="denied"?" Je hebt meldingen voor Mild eerder geweigerd. Zet ze aan via Instellingen > Meldingen > Mild.":""); } };
+  }
+  return c;
+}
+
+
+/* ---------- Bronnen ---------- */
+const SOURCES = [
+ {yr:"2012", t:"Hayes, Strosahl & Wilson: Acceptance and Commitment Therapy (2e druk)", k:"Basis", url:"https://contextualscience.org/act", used:"De zes processen van ACT vormen de ruggengraat van het programma: opmerken en aandacht (week 1), waarden (2), afstand nemen van gedachten (3), ruimte maken voor gevoelens (4), het kijkende zelf (6) en doen (7)."},
+ {yr:"2008", t:"Russ Harris: The Happiness Trap (De valstrik van het geluk)", k:"Basis", url:"https://thehappinesstrap.com/", used:"De toegankelijke vertaling van ACT naar dagelijkse oefeningen, zoals \u201cik merk dat ik denk dat...\u201d, de criticus een naam geven en een gedachte in een gek stemmetje zeggen."},
+ {yr:"2001", t:"Crocker & Wolfe: Contingencies of self-worth (Psychological Review)", k:"Waarom", url:"https://doi.org/10.1037/0033-295X.108.3.593", used:"Wie zijn eigenwaarde ophangt aan prestaties of oordelen van anderen, wordt er kwetsbaarder van. Daarom jaagt Mild niet op meer zelfvertrouwen, maar op een andere verhouding tot jezelf."},
+ {yr:"2009", t:"Wood, Perunovic & Lee: Positive self-statements, power for some, peril for others (Psychological Science)", k:"Waarom", url:"https://doi.org/10.1111/j.1467-9280.2009.02370.x", used:"Positieve zelfuitspraken (\u201cik ben goed genoeg\u201d) werken bij mensen met een laag zelfbeeld averechts. Daarom staan er in Mild geen affirmaties; je leert kijken naar wat je denkt en kiezen wat je doet."},
+ {yr:"2023", t:"Neff: Self-compassion, theory, method, research and intervention (Annual Review of Psychology)", k:"Week 5", url:"https://doi.org/10.1146/annurev-psych-032420-031047", used:"De drie onderdelen van zelfcompassie: vriendelijk zijn voor jezelf, beseffen dat iedereen dit heeft, en het gevoel zien zonder te overdrijven. Dat zijn de drie eerste dagen van week 5."},
+ {yr:"2019", t:"Ferrari e.a.: Self-compassion interventions and psychosocial outcomes, meta-analyse van 27 RCT's (Mindfulness)", k:"Week 5", url:"https://doi.org/10.1007/s12671-019-01134-6", used:"Oefenen in zelfcompassie verbetert zelfkritiek, stress, angst en somberheid met een matig tot groot effect, en de winst blijft. Ook: groepen werken beter dan alleen, vandaar het gezelschap en de opdrachten in week 9."},
+ {yr:"2024", t:"Dreisoerner e.a.: Daily micropractice of self-compassionate touch (Behaviour Research and Therapy)", k:"Week 5", url:"https://doi.org/10.1016/j.brat.2024.104485", used:"Twintig seconden een hand op je borst of buik, een maand lang, verhoogde zelfcompassie en verlaagde stress bij wie het vrijwel dagelijks deed. Dit is dag 3 van week 5, en het bewijs dat een oefening heel kort mag zijn als je hem maar volhoudt."},
+ {yr:"2025", t:"Big Joy Project, UCSF (Guevarra, Epel e.a.)", k:"Opzet", url:"https://neurosciencenews.com/micro-acts-happiness-psychology-29253/", used:"Vijf tot tien minuten kleine acties per dag gaven bij 17.600 deelnemers na een week al meer welzijn en minder stress. Daarom is elke opdracht in Mild een kleine handeling in je gewone dag."},
+ {yr:"2010", t:"Lally e.a.: How are habits formed (European Journal of Social Psychology)", k:"Opzet", url:"https://doi.org/10.1002/ejsp.674", used:"Een gewoonte heeft gemiddeld 66 dagen nodig (spreiding 18 tot 254), en \u00e9\u00e9n gemiste dag maakt niets uit. Daarom duurt Mild tien weken, en telt een gemiste dag niet mee."},
+ {yr:"2023", t:"Silverman e.a.: streaks en motivatie (Journal of Consumer Research)", k:"Opzet", url:"https://thedecisionlab.com/insights/consumer-insights/streak-creep-the-perils-of-too-much-gamification", used:"Wie een streak breekt, stopt vaker helemaal, en de streak wordt belangrijker dan de activiteit. Daarom heeft Mild geen streaks: je gezelschap groeit door wat je deed, en er verdwijnt nooit iets."},
+ {yr:"2020", t:"Linardon: Can acceptance, mindfulness and self-compassion be learned by smartphone apps? Meta-analyse (Behavior Therapy)", k:"Opzet", url:"https://pubmed.ncbi.nlm.nih.gov/32586436/", used:"Apps kunnen acceptatie, mindfulness en zelfcompassie aanleren, met kleine tot matige effecten in gerandomiseerde studies. Het format van Mild is dus een re\u00eble weg."},
+ {yr:"2023", t:"Meta-analyse van zelfhulp-ACT via internet (Cognitive Behaviour Therapy)", k:"Opzet", url:"https://doi.org/10.1080/16506073.2023.2178498", used:"ACT werkt ook zonder therapeut, als zelfhulp via internet, met meetbaar effect op klachten en welzijn."},
+ {yr:"2017", t:"Morrison e.a.: timing en frequentie van pushmeldingen bij een stress-app (PLOS ONE)", k:"Meldingen", url:"https://doi.org/10.1371/journal.pone.0169162", used:"Een dagelijkse melding verhoogt het gebruik zonder mensen weg te jagen; wat wel irriteert is een herhaalde boodschap. Daarom \u00e9\u00e9n melding 's ochtends en \u00e9\u00e9n 's avonds, elke dag met andere inhoud."},
+ {yr:"2019", t:"Baumel e.a.: Objective user engagement with mental health apps (JMIR)", k:"Meldingen", url:"https://www.jmir.org/2019/9/e14567/", used:"Van 93 apps voor mentale gezondheid gebruikte na 30 dagen nog maar 3,3% van de mensen de app. Daarom vraagt Mild hooguit drie minuten per dag en gebeurt het echte werk buiten je telefoon."},
+ {yr:"2026", t:"Systematische beoordeling van 17 openbare ACT-apps (Journal of Contextual Behavioral Science)", k:"Meldingen", url:"https://www.sciencedirect.com/science/article/pii/S2212144726000013", used:"Bestaande ACT-apps zijn vooral tekst en audio, houden gebruikers slecht vast en helpen nauwelijks bij doelen halen. Mild is daar het antwoord op: \u00e9\u00e9n zin per dag, en elke dag iets doen."},
+ {yr:"2026", t:"Iris Sommer, psychiater en hoogleraar (UMCG), interview in Trouw", k:"Inspiratie", url:"https://uitgeverijprometheus.nl/nieuws/groot-interview-iris-sommer-trouw/", used:"Je brein voegt altijd iets toe aan wat je waarneemt; onbevooroordeeld kijken bestaat niet. Dat geldt ook voor hoe je naar jezelf kijkt, en dat is waar Mild mee begon."}
+];
+function sourcesCard(){
+  const c = el(`<section class="card stack"><p class="eyebrow">Waar Mild op gebouwd is</p><p class="small muted">Elke oefening in Mild komt ergens vandaan. Hieronder staat per bron wat we eruit hebben gehaald. Tik op een titel om het te lezen.</p><div id="src"></div></section>`);
+  const box = c.querySelector("#src");
+  for(const s of SOURCES){
+    box.append(el(`<details class="src"><summary><span class="yr">${esc(s.yr)}</span><span>${esc(s.t)}</span></summary><div class="body"><div><span class="tag">${esc(s.k)}</span></div><div>${esc(s.used)}</div><div><a href="${esc(s.url)}" target="_blank" rel="noopener">Naar de bron</a></div></div></details>`));
   }
   return c;
 }
@@ -367,6 +416,7 @@ function renderMore(i){
   t.querySelector("#btn-real").onclick=()=>{ S.offset=0; save(); syncPush(); render(); };
   t.querySelector("#btn-reset").onclick=()=>{ t.querySelector("#confirm").hidden=false; };
   t.querySelector("#btn-reset2").onclick=async()=>{ await disablePush(); S={start:null,offset:0,entries:{},sunday:{},before:"",after:"",push:false,morning:"07:30",evening:"21:30"}; save(); view="today"; render(); };
+  main.append(sourcesCard());
   main.append(el(`<section class="card stack">
     <p class="eyebrow">Hulp</p>
     <p class="hint">Mild is bedoeld voor mensen zonder klachten en vervangt geen behandeling. Zit je ergens mee: je huisarts, of 113 (bel 0800-0113 of chat via 113.nl).</p>
